@@ -6,20 +6,13 @@ package frc.robot;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.controller.RamseteController;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
-import edu.wpi.first.wpilibj.util.Units;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.TankDrive;
 import frc.robot.subsystems.DriveTrain;
@@ -78,7 +71,7 @@ public class RobotContainer {
     try {
       trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
     } catch (IOException e) {
-      // TODO Auto-generated catch block
+  
       e.printStackTrace();
     }
     System.out.println("Made the trajectory");
@@ -88,7 +81,6 @@ public class RobotContainer {
     //   try {
     //     trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
     //   } catch (IOException e) {
-    //     // TODO Auto-generated catch block
     //     e.printStackTrace();
     //   }
     // } else {
@@ -97,26 +89,13 @@ public class RobotContainer {
     //     try {
     //       trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
     //     } catch (IOException e) {
-    //       // TODO Auto-generated catch block
     //       e.printStackTrace();
     //     }
     // }
-    
-    TrajectoryConfig config = new TrajectoryConfig(
-      Units.feetToMeters(Constants.WeaverConstants.maxVelocity), 
-      Units.feetToMeters(Constants.WeaverConstants.maxAcceleration)
-    );
-    config.setKinematics(driveTrain.getKinematics());
 
-    // Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-    //   new Pose2d(), 
-    //   List.of(
-    //     new Translation2d(1, 1),
-    //     new Translation2d(2, -1)
-    //   ), 
-    //   new Pose2d(new Translation2d(3, 0), new Rotation2d()), 
-    //   config
-    // );
+    driveTrain.resetEncoders();
+    driveTrain.zeroHeading();
+
     RamseteCommand command = new RamseteCommand(
       trajectory,
       driveTrain::getPose,
@@ -126,12 +105,19 @@ public class RobotContainer {
       driveTrain::getSpeeds,
       driveTrain.getLeftPIDController(),
       driveTrain.getRightPIDController(),
-      driveTrain::setOutput,
+      (leftVolts, rightVolts) -> {
+        driveTrain.setOutput(leftVolts, rightVolts);
+        // System.out.println(leftVolts /12.+ " " + (rightVolts));
+
+      },
       driveTrain
     );
     System.out.println("Made the command");
     System.out.println(command);
-    return command;
+
+    driveTrain.resetOdometry(trajectory.getInitialPose());
+
+    return command.andThen(() -> driveTrain.setOutput(0, 0));
   }
 
   public static double getControllerAxis(XboxController controller, int axis) {
