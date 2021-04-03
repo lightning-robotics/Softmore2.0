@@ -43,7 +43,7 @@ public final class Constants {
     }
 
     public static final class WeaverConstants {
-        public static final String SEARCH_ARED_JSON = "paths/SearchARed.wpilib.json";
+        public static final String INTAKE_BLUE = "paths/output/IntakeBlue.wpilib.json";
         public static final String SEARCH_ABLUE_JSON = "paths/IntakeBlue.wpilib.json";
 
         public static final String SEARCH_BRED_JSON = "paths/SearchBRed.wpilib.json";

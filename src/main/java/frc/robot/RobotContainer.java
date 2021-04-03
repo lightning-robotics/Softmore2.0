@@ -79,16 +79,17 @@ public class RobotContainer {
     //   }
     // } else {
     //     // get the blue path
-    //     Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(Constants.WeaverConstants.SEARCH_ABLUE_JSON);
-    //     try {
-    //       trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-    //     } catch (IOException e) {
-    //       e.printStackTrace();
-    //     }
+        Trajectory trajectory = new Trajectory();
+        Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(Constants.WeaverConstants.INTAKE_BLUE);
+        try {
+          trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
     // }
 
-      // return getTrajectoryCommand(trajectory).andThen(() -> driveTrain.setOutput(0, 0));
-      return getBouncePath();
+      return getTrajectoryCommand(trajectory).andThen(() -> driveTrain.setOutput(0, 0));
+      // return getBouncePath();
   }
 
   public static Command getTrajectoryCommand(Trajectory trajectory) {

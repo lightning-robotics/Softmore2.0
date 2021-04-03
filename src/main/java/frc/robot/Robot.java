@@ -67,7 +67,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     // m_robotContainer.intakeIn.execute();
-    // m_robotContainer.intake.setSpeed(Constants.IntakeConstants.INTAKE_SPEED);
+    m_robotContainer.intake.setSpeed(Constants.IntakeConstants.INTAKE_SPEED);
     CommandScheduler.getInstance().run();
 
   }
