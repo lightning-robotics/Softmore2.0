@@ -28,8 +28,8 @@ public class Intake extends SubsystemBase {
 
 
   public void setSpeed(double speed) {
-    leftMotor.set(ControlMode.PercentOutput, speed != 0 ? speed + 0.05 : speed);
-    rightMotor.set(ControlMode.PercentOutput, speed != 0 ? -speed - 0.05 : -speed);
+    leftMotor.set(ControlMode.PercentOutput, speed != 0 ? speed + 0.1 : speed);
+    rightMotor.set(ControlMode.PercentOutput, speed != 0 ? -speed - 0.1 : -speed);
     centerMotor.set(ControlMode.PercentOutput, -speed);
     backMotor.set(ControlMode.PercentOutput, speed != 0 ? -speed + 0.05 : -speed);
   }

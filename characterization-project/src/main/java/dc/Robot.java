@@ -117,7 +117,7 @@ public class Robot extends TimedRobot {
       case RIGHT:
         // set right side methods = encoder methods
 
-        encoder = new Encoder(3, 14);
+        encoder = new Encoder(8, 14);
         encoder.setReverseDirection(false);
 
         encoder.setDistancePerPulse(encoderConstant);
@@ -126,7 +126,7 @@ public class Robot extends TimedRobot {
 
         break;
       case LEFT:
-        encoder = new Encoder(4, 8);
+        encoder = new Encoder(4, 3);
         encoder.setReverseDirection(false);
         encoder.setDistancePerPulse(encoderConstant);
         leftEncoderPosition = encoder::getDistance;
@@ -156,11 +156,11 @@ public class Robot extends TimedRobot {
     // create left motor
     WPI_TalonSRX leftMotor = setupWPI_TalonSRX(14, Sides.LEFT, false);
 
-    WPI_TalonSRX leftFollowerID3 = setupWPI_TalonSRX(3, Sides.FOLLOWER, false);
+    WPI_TalonSRX leftFollowerID3 = setupWPI_TalonSRX(8, Sides.FOLLOWER, false);
     leftFollowerID3.follow(leftMotor);
 
     WPI_TalonSRX rightMotor = setupWPI_TalonSRX(4, Sides.RIGHT, false);
-    WPI_TalonSRX rightFollowerID8 = setupWPI_TalonSRX(8, Sides.FOLLOWER, false);    
+    WPI_TalonSRX rightFollowerID8 = setupWPI_TalonSRX(3, Sides.FOLLOWER, false);    
     rightFollowerID8.follow(rightMotor);
     drive = new DifferentialDrive(leftMotor, rightMotor);
     drive.setDeadband(0);

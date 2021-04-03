@@ -12,7 +12,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
@@ -30,11 +29,11 @@ public class DriveTrain extends SubsystemBase {
   private static final WPI_TalonSRX frontLeftMotor = new WPI_TalonSRX(Constants.DriveConstants.FRONT_LEFT_MOTOR);
   private static final WPI_TalonSRX backLeftMotor = new WPI_TalonSRX(Constants.DriveConstants.BACK_LEFT_MOTOR);
 
-  AHRS gyro = new AHRS(SerialPort.Port.kMXP);
+  public static AHRS gyro = new AHRS(SerialPort.Port.kMXP);
 
     // distance between the wheels
     DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(28));
-    DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
+    DifferentialDriveOdometry odometry;
   
     SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(Constants.WeaverConstants.kS,
         Constants.WeaverConstants.kV, Constants.WeaverConstants.kA);
@@ -46,26 +45,42 @@ public class DriveTrain extends SubsystemBase {
   
   /** Creates a new DriveTrain. */
   public DriveTrain() {
-    DriveTrain.frontLeftMotor.follow(DriveTrain.backLeftMotor);
-    DriveTrain.backRightMotor.follow(DriveTrain.frontRightMotor);
 
-    DriveTrain.backLeftMotor.setInverted(false);
-    DriveTrain.backRightMotor.setInverted(true);
-    DriveTrain.frontLeftMotor.setInverted(false);
-    DriveTrain.frontRightMotor.setInverted(true);
-
-    DriveTrain.frontLeftMotor.setNeutralMode(NeutralMode.Brake);
-    DriveTrain.backLeftMotor.setNeutralMode(NeutralMode.Brake);
-    DriveTrain.frontRightMotor.setNeutralMode(NeutralMode.Brake);
-    DriveTrain.backRightMotor.setNeutralMode(NeutralMode.Brake);
+    frontLeftMotor.setNeutralMode(NeutralMode.Brake);
+    backLeftMotor.setNeutralMode(NeutralMode.Brake);
+    frontRightMotor.setNeutralMode(NeutralMode.Brake);
+    backRightMotor.setNeutralMode(NeutralMode.Brake);
 
     backLeftMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute);
     frontRightMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute);
+
+    frontLeftMotor.setInverted(false);
+    backLeftMotor.setInverted(false);
+    frontRightMotor.setInverted(true);
+    backRightMotor.setInverted(true);
+
+    backLeftMotor.setSensorPhase(true);
+    frontRightMotor.setSensorPhase(true);
+
+    frontLeftMotor.follow(DriveTrain.backLeftMotor);
+    backRightMotor.follow(DriveTrain.frontRightMotor);
 
     backLeftMotor.setSelectedSensorPosition(0);
     frontRightMotor.setSelectedSensorPosition(0);
 
     gyro.reset();
+
+    odometry = new DifferentialDriveOdometry(gyro.getRotation2d());
+  }
+
+  public void resetEncoders() {
+    backLeftMotor.setSelectedSensorPosition(0);
+    frontRightMotor.setSelectedSensorPosition(0);
+  }
+
+  public void resetOdometry(Pose2d pose) {
+    resetEncoders();
+    odometry.resetPosition(pose, gyro.getRotation2d());
   }
   
   public void setRightMotorSpeed(double speed) {
@@ -80,20 +95,25 @@ public class DriveTrain extends SubsystemBase {
     return (Math.abs(speed) < Constants.DriveConstants.DEADZONE);
   }
 
-  public Rotation2d getHeading() {
-    return Rotation2d.fromDegrees(-gyro.getAngle());
+  public void zeroHeading() {
+    gyro.reset();
   }
 
+  public double getHeading() {
+    return gyro.getRotation2d().getDegrees();
+  }
+  
   public double getVelocity(TalonSRX motor) {
     // getSelectedSensorVelocity returns encoder units per 100 ms
     // returns in meters per second
-    return motor.getSelectedSensorVelocity() * (10.0 / 4096) * 2 * Math.PI
-        * Units.inchesToMeters(Constants.WeaverConstants.wheelRadius);
+    return getMetersPerSec(motor.getSelectedSensorVelocity());
   }
 
   public DifferentialDriveWheelSpeeds getSpeeds() {
     // velocity
-    return new DifferentialDriveWheelSpeeds(getVelocity(backLeftMotor), getVelocity(frontRightMotor));
+    return new DifferentialDriveWheelSpeeds(
+        getVelocity(backLeftMotor), 
+        getVelocity(frontRightMotor));
   }
 
   public SimpleMotorFeedforward getFeedforward() {
@@ -105,12 +125,19 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public Pose2d getPose() {
-    return pose;
+    return odometry.getPoseMeters();
   }
 
   public void setOutput(double leftVolts, double rightVolts) {
-    backLeftMotor.set(ControlMode.PercentOutput, leftVolts / 12.0);
-    frontRightMotor.set(ControlMode.PercentOutput, rightVolts / 12.0);
+    backLeftMotor.setVoltage(leftVolts);
+    frontRightMotor.setVoltage(rightVolts);
+    // double leftMult = (Math.ceil(Math.abs(leftVolts)) / 12 + 1) * 12;
+    // double rightMult = (Math.ceil(Math.abs(rightVolts)) / 12 + 1) * 12;
+    // double mult = Math.max(leftMult, rightMult);
+
+    // if (leftVolts / mult > 1) System.out.println((leftVolts / mult) + " " + leftVolts);
+    // backLeftMotor.set(ControlMode.PercentOutput, leftVolts/mult);
+    // frontRightMotor.set(ControlMode.PercentOutput, rightVolts/mult); 
   }
 
   public PIDController getLeftPIDController() {
@@ -121,9 +148,20 @@ public class DriveTrain extends SubsystemBase {
     return rightPIDController;
   }
 
+  public double getDistance(double ticks) {
+    double circumference = Math.PI * Units.inchesToMeters(Constants.WeaverConstants.wheelRadius * 2);
+    return ticks * circumference / 4096.;
+  }
+
+  public double getMetersPerSec(double ticks) {
+    return getDistance(ticks * 10);
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    pose = odometry.update(getHeading(), getVelocity(backLeftMotor), getVelocity(frontRightMotor));
+    pose = odometry.update(gyro.getRotation2d(), 
+    getDistance(backLeftMotor.getSelectedSensorPosition()),
+    getDistance(frontRightMotor.getSelectedSensorPosition()));
   }
 }

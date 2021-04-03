@@ -6,20 +6,14 @@ package frc.robot;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.controller.RamseteController;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
-import edu.wpi.first.wpilibj.util.Units;
+import frc.robot.Constants.WeaverConstants;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.TankDrive;
 import frc.robot.subsystems.DriveTrain;
@@ -73,14 +67,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    Trajectory trajectory = new Trajectory();
-    Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(Constants.WeaverConstants.FAKE_PATH);
-    try {
-      trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    // Trajectory trajectory = getTrajectory(Constants.WeaverConstants.BARREL1_JSON);
     System.out.println("Made the trajectory");
     // if (limelight.isVisible()) {
     //   // get the red path
@@ -88,7 +75,6 @@ public class RobotContainer {
     //   try {
     //     trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
     //   } catch (IOException e) {
-    //     // TODO Auto-generated catch block
     //     e.printStackTrace();
     //   }
     // } else {
@@ -97,26 +83,18 @@ public class RobotContainer {
     //     try {
     //       trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
     //     } catch (IOException e) {
-    //       // TODO Auto-generated catch block
     //       e.printStackTrace();
     //     }
     // }
-    
-    TrajectoryConfig config = new TrajectoryConfig(
-      Units.feetToMeters(Constants.WeaverConstants.maxVelocity), 
-      Units.feetToMeters(Constants.WeaverConstants.maxAcceleration)
-    );
-    config.setKinematics(driveTrain.getKinematics());
 
-    // Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-    //   new Pose2d(), 
-    //   List.of(
-    //     new Translation2d(1, 1),
-    //     new Translation2d(2, -1)
-    //   ), 
-    //   new Pose2d(new Translation2d(3, 0), new Rotation2d()), 
-    //   config
-    // );
+      // return getTrajectoryCommand(trajectory).andThen(() -> driveTrain.setOutput(0, 0));
+      return getBouncePath();
+  }
+
+  public static Command getTrajectoryCommand(Trajectory trajectory) {
+    driveTrain.resetEncoders();
+    driveTrain.zeroHeading();
+
     RamseteCommand command = new RamseteCommand(
       trajectory,
       driveTrain::getPose,
@@ -131,7 +109,36 @@ public class RobotContainer {
     );
     System.out.println("Made the command");
     System.out.println(command);
+
+    driveTrain.resetOdometry(trajectory.getInitialPose());
+
     return command;
+  }
+
+  public static Trajectory getTrajectory(String path) {
+    Trajectory trajectory = new Trajectory();
+    Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(path);
+    try {
+      trajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+    } catch (IOException e) {
+  
+      e.printStackTrace();
+    }
+    return trajectory;
+  }
+
+  public static Command getBouncePath() {
+    
+    Trajectory trajectory1 = getTrajectory(Constants.WeaverConstants.BARREL1_JSON);
+    Trajectory trajectory2 = getTrajectory(Constants.WeaverConstants.BARREL2_JSON);
+    Trajectory trajectory3 = getTrajectory(Constants.WeaverConstants.BARREL3_JSON);
+    Trajectory trajectory4 = getTrajectory(Constants.WeaverConstants.BARREL4_JSON);
+
+    return getTrajectoryCommand(trajectory1)
+            .andThen(() -> getTrajectoryCommand(trajectory2))
+            .andThen(() -> getTrajectoryCommand(trajectory3))
+            .andThen(() -> getTrajectoryCommand(trajectory4))
+            .andThen(() -> driveTrain.setOutput(0, 0));
   }
 
   public static double getControllerAxis(XboxController controller, int axis) {

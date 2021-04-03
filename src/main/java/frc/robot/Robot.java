@@ -66,6 +66,8 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
+    // m_robotContainer.intakeIn.execute();
+    // m_robotContainer.intake.setSpeed(Constants.IntakeConstants.INTAKE_SPEED);
     CommandScheduler.getInstance().run();
 
   }
