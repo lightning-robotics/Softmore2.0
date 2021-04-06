@@ -88,7 +88,8 @@ public class RobotContainer {
         }
     // }
 
-      return getTrajectoryCommand(trajectory).andThen(() -> driveTrain.setOutput(0, 0));
+      return getTrajectoryCommand(trajectory).andThen(() -> driveTrain.setOutput(0, 0))
+      .andThen(() -> intake.setSpeed(0));
       // return getBouncePath();
   }
 
