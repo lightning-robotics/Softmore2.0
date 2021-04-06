@@ -99,6 +99,7 @@ public class RobotContainer {
 
     RamseteCommand command = new RamseteCommand(
       trajectory,
+      
       driveTrain::getPose,
       new RamseteController(2.0, 0.7),
       driveTrain.getFeedforward(),
