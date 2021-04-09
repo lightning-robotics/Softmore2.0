@@ -40,18 +40,19 @@ public final class Constants {
         public static final int ROBOT_DRIVE_YAXIS = 1;
         public static final int ROBOT_DRIVE_XAXIS = 0;
         public static final int ROBOT_DRIVE_XAXIS_2 = 4;
+
     }
 
     public static final class WeaverConstants {
         public static final String INTAKE_BLUE = "paths/output/IntakeBlue.wpilib.json";
-        public static final String SEARCH_ABLUE_JSON = "paths/IntakeBlue.wpilib.json";
+        public static final String TRIAGNLE_INTAKE_BLUE = "paths/output/TriangleIntakeBlue.wpilib.json";
 
         public static final String SEARCH_BRED_JSON = "paths/SearchBRed.wpilib.json";
         public static final String SEARCH_BBLUE_JSON = "paths/SearchBBlue.wpilib.json";
 
-        public static final String BARREL_JSON = "paths/Barrel.wpilib.json";
-        public static final String BOUNCE_JSON = "paths/Bounce.wpilib.json";
-        public static final String SALMON_JSON = "paths/Salmon.wpilib.json";
+        public static final String BARREL = "paths/output/Barrel.wpilib.json";
+        public static final String BARREL_RECT = "paths/output/RectangleBarrel.wpilib.json";
+        public static final String BARREL2 = "paths/output/Worth_A_Shot.wpilib.json";
 
         public static final String FAKE_PATH = "paths/Fake9.wpilib.json";
 

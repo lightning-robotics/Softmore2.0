@@ -115,7 +115,7 @@ public class RobotContainer {
 
     driveTrain.resetOdometry(trajectory.getInitialPose());
 
-    return command;
+    return command.andThen(() -> driveTrain.setOutput(0, 0));
   }
 
   public static Trajectory getTrajectory(String path) {
